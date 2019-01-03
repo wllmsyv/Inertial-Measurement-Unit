@@ -1,9 +1,44 @@
+/*
+ *	Test Bench:
+ *		Atemega 2650 (Arduino Mega)
+ *
+ *		Adafruit 10-D0F:https: //learn.adafruit.com/adafruit-10-dof-imu-breakout-lsm303-l3gd20-bmp180/design-files
+ *			ST LSM303DLHC Accelerometer and Magnetometer: https://www.st.com/resource/en/datasheet/lsm303dlhc.pdf
+ *			ST L3GD20H Gyroscope: https://www.st.com/resource/en/datasheet/l3gd20h.pdf
+ *			BOSCH BMP180 Pressure and Temperuture Sensor: https://ae-bst.resource.bosch.com/media/_tech/media/datasheets/BST-BMP180-DS000.pdf
+ *
+ *
+ *	Instructions:
+ *		Create a new IMU object.
+ *		Create 3 vector structures for storing Accel, Gyro, and Mag data
+ *		Call the init function on the object.
+ *			The init function initializes communication
+ *			and makes some sensible configuration choices.
+ *			I2C is initialized to 400k high speed mode.
+ *		Call the read function on the IMU object passing in pointers
+ *		to the  Accel, Gyro, and Mag vector structures.
+ *
+ *	As of this version, the pressure and temperature sensor of the 10-DOF have not been integrated
+ *	into this class.
+ *
+ */
+
+
 #ifndef _IMU
 #define _IMU
 
 #include "Arduino.h"
 #include "Wire.h"
 
+ /*===================================================================
+  *
+  *		REGISTER DEFINITONS
+  *		ACCELEROMTER, GYROSCOPE, MAGNETOMETER, PRESSURE AND TEMP (WIP)
+  *
+  * ==================================================================
+  */
+
+// Accelerometer
 typedef enum {
 	ACCEL_CTRL_REG1_A      = 0x20,
 	ACCEL_CTRL_REG2_A      = 0x21,
@@ -37,9 +72,7 @@ typedef enum {
 	ACCEL_TIME_WINDOW_A    = 0x3D
 } acell_register;
 
-
-//7.2 Magnetic field sensing register description . . . . . . . . . . . . . . . . . . . . . . . 37
- 
+// Magnetometer
  typedef enum {
 	MAG_CRA_REG_M      = 0x00,
 	MAG_CRB_REG_M      = 0x01,
@@ -58,7 +91,7 @@ typedef enum {
 	MAG_TEMP_OUT_L_M   = 0x32
  } mag_register;
 
- 
+ // Gyroscope
  typedef enum {
 	GYRO_WHO_AM_I 		= 0x0F,
 	GYRO_CTRL1 			= 0x20,
@@ -88,32 +121,68 @@ typedef enum {
 	GYRO_IG_DURATION 	= 0x38
  }gyro_register;
 
+ //Pressure and Temperature Sensor
+ typedef enum {
+	 //WIP
+ }pressure_temp_register;
 
+
+ /*===================================================================
+  *
+  * 	END REGISTER DEFINITIONS
+  *
+  * ==================================================================
+  */
+
+
+// Stores Raw information,
+// Work still needs to be done to
+// turn this into usable information.
 struct vector{
   int16_t x = 0;
   int16_t y = 0;
   int16_t z = 0;
-  double temp = 0;
 };
 
 
-class IMU {
-	private:
-	const byte ADDRESS_ACCEL = 0x32>>1;
-	const byte ADDRESS_MAG = 0x3C>>1;
-	const byte ADDRESS_GYRO = 0x6B;
 
-    void configure_accel(void);
-    void configure_mag(void);
-    void configure_gyro(void);
-    void read_accel(vector *, byte, byte);
-    void read_mag(vector *, byte, mag_register);
+/*===================================================================
+ *
+ * 	CLASS DEFINITION
+ *
+ * ==================================================================
+ */
+
+class IMU {
+
+	private:
+
+		// Device Addresses
+		const byte ADDRESS_ACCEL = 0x32>>1;
+		const byte ADDRESS_MAG = 0x3C>>1;
+		const byte ADDRESS_GYRO = 0x6B;
+		const byte ADDRESS_PANDT = 0x00; //Not used at this time.
+
+		// Configurations.
+		void configure_accel(void);
+		void configure_mag(void);
+		void configure_gyro(void);
+
+		// Accelerometer and Gyroscope have the same read pattern
+		// so the same function can be reused.
+		void read_accel_gyro(vector *, byte, byte);
+
+		// Read characteristics and byte order are different.
+		void read_mag(vector *, byte, mag_register);
 
 	public:
 
-    IMU(void);
-    void init(void);
-    void read(vector*, vector*, vector*);
+		// Constructor
+		IMU(void);
+
+		//Public Functions
+		void init(void);
+		void read(vector*, vector*, vector*);
 	  
 };
 
