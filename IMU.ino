@@ -49,7 +49,7 @@ void loop()
 	 // to the  Accel, Gyro, and Mag vector structures.
 	imu.read(&accel, &gyro, &mag);
 
-
+	//Readback information to console.
 	Serial.print("A.X: ");
 	Serial.print(accel.x);
 	Serial.print(",\t A.Y: ");
